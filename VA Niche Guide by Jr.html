@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VA Niche Finder (Beginner Friendly)</title>
+<style>
+body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px; }
+.container { max-width:750px; margin:auto; background:white; padding:20px; border-radius:12px; }
+h1 { text-align:center; }
+.progress-text { text-align:right; font-size:13px; color:#555; margin-bottom:5px; }
+.question { margin-bottom:20px; }
+.hint { font-size:13px; color:#666; margin-bottom:10px; }
+label { display:block; margin:10px 0; padding:12px; border-radius:8px; background:#f9fafb; }
+input[type="checkbox"] { margin-right:10px; }
+.buttons { text-align:center; margin-top:20px; }
+.btn-back { background:#d1d5db; color:#000; }
+.btn-next { background:#374151; color:#fff; }
+button { padding:12px 25px; margin:10px; border:none; cursor:pointer; border-radius:8px; }
+.card { padding:15px; border-radius:10px; margin-bottom:12px; background:#e5e7eb; }
+.progress { height:8px; background:#ddd; border-radius:6px; margin-bottom:10px; }
+.progress-bar { height:8px; background:black; border-radius:6px; width:0%; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>VA Niche Finder by Jr</h1>
+<div class="progress-text" id="progressText"></div>
+<div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+<div id="quiz"></div>
+<div class="buttons" id="navButtons">
+<button class="btn-back" onclick="prevStep()">Back</button>
+<button class="btn-next" onclick="nextStep()">Next</button>
+</div>
+<div id="result"></div>
+</div>
+
+<script>
+let step = 0;
+
+const niches = {
+"General Administrative VA":0,
+"Executive Assistant":0,
+"Social Media Management VA":0,
+"E-Commerce VA":0,
+"Bookkeeping / Finance VA":0,
+"Project Management VA":0,
+"Content Creation / Writing VA":0,
+"Customer Service VA":0,
+"Digital Marketing VA":0,
+"Real Estate VA":0,
+"Tech / Automation VA":0,
+"Podcast / Video VA":0,
+"Healthcare / Medical VA":0
+};
+
+const descriptions = {
+"General Administrative VA":"Handles basic day-to-day business tasks like managing emails (Gmail), organizing calendars (Google Calendar), doing data entry (Excel/Sheets), and keeping files or documents organized. This role supports businesses with simple but essential tasks to keep things running smoothly.",
+
+"Executive Assistant":"Works closely with business owners or executives by managing schedules, handling emails, booking meetings, preparing reports, and sometimes making decisions on their behalf. This role requires organization, trust, and the ability to handle higher-level responsibilities.",
+
+"Social Media Management VA":"Manages social media accounts by creating posts (using Canva), writing captions, scheduling content, replying to comments/messages, and helping grow the page. You’ll often work on platforms like Facebook, Instagram, and TikTok.",
+
+"E-Commerce VA":"Handles online stores like Shopify or Shopee by uploading products, managing product listings, processing orders, updating inventory, and sometimes responding to customer inquiries. You help keep an online store running smoothly.",
+
+"Bookkeeping / Finance VA":"Manages financial records such as tracking expenses, creating invoices, recording income, and organizing financial data using tools like Excel, QuickBooks, or Xero. Accuracy and attention to detail are very important here.",
+
+"Project Management VA":"Helps organize and track tasks within a team by setting deadlines, assigning work, monitoring progress, and ensuring everything is completed on time using tools like ClickUp, Asana, or Notion.",
+
+"Content Creation / Writing VA":"Creates written content such as blog posts, social media captions, email newsletters, or scripts. Often uses tools like ChatGPT to assist, but still requires editing and creativity.",
+
+"Customer Service VA":"Handles customer inquiries through chat, email, or support systems (like Zendesk or Freshdesk). Tasks include answering questions, resolving issues, processing refunds, and making sure customers are satisfied.",
+
+"Digital Marketing VA":"Focuses on growing a business online through marketing strategies like running ads (Facebook/Google Ads), SEO (search engine optimization), email marketing, and analyzing performance using tools like Google Analytics.",
+
+"Real Estate VA":"Supports real estate agents by managing property listings, following up with leads, updating CRM systems (like HubSpot), scheduling property viewings, and handling client communication.",
+
+"Tech / Automation VA":"Builds systems that automate repetitive tasks using tools like Zapier, Make, or AI tools. For example, connecting apps so tasks happen automatically without manual work.",
+
+"Podcast / Video VA":"Edits videos or podcasts, creates short clips (Reels, TikTok), designs thumbnails, and repurposes long content into shorter formats for social media or YouTube.",
+
+"Healthcare / Medical VA":"Works with clinics or healthcare providers by managing patient records, scheduling appointments, handling billing or insurance-related tasks, and ensuring data is handled securely and accurately."
+};
+
+const answers = {};
+
+const questions = [
+{title:"Which tools have you used?",hint:"Select all that apply (examples included)",options:[
+{text:"Design tools (Canva, Photoshop) — creating graphics or posts",tags:["Social Media Management VA","Content Creation / Writing VA"]},
+{text:"Video tools (CapCut, Premiere) — editing videos or reels",tags:["Podcast / Video VA"]},
+{text:"Spreadsheets (Excel, Google Sheets) — tracking data or lists",tags:["Bookkeeping / Finance VA","Project Management VA"]},
+{text:"Email tools (Gmail, Outlook) — sending and organizing emails",tags:["Executive Assistant","General Administrative VA"]},
+{text:"Social media apps (Facebook, Instagram, TikTok)",tags:["Social Media Management VA"]},
+{text:"CRM tools (HubSpot, Zoho) — managing customers or leads",tags:["Customer Service VA","Digital Marketing VA","Real Estate VA"]},
+{text:"E-commerce platforms (Shopify, Shopee)",tags:["E-Commerce VA"]},
+{text:"Automation tools (Zapier, Make) — connecting apps automatically",tags:["Tech / Automation VA"]},
+{text:"AI tools (ChatGPT, Claude, Gemini) — writing or automating tasks",tags:["Content Creation / Writing VA","Tech / Automation VA"]}
+]},
+{title:"Which tasks feel easy for you?",hint:"Select what you can do comfortably",options:[
+{text:"Designing visuals (posts, ads, thumbnails)",tags:["Social Media Management VA"]},
+{text:"Writing content (captions, blogs, scripts)",tags:["Content Creation / Writing VA"]},
+{text:"Organizing files or systems (folders, tasks)",tags:["Executive Assistant","Project Management VA"]},
+{text:"Data entry (typing or copying information)",tags:["General Administrative VA","Bookkeeping / Finance VA"]},
+{text:"Customer support (replying to chats/emails)",tags:["Customer Service VA"]},
+{text:"Editing videos (TikTok, YouTube clips)",tags:["Podcast / Video VA"]},
+{text:"Research (finding info on Google or YouTube)",tags:["Digital Marketing VA"]},
+{text:"Scheduling (calendar, meetings)",tags:["Executive Assistant"]}
+]},
+{title:"What do you enjoy doing?",hint:"Pick what you like doing the most",options:[
+{text:"Creative work (designing, content creation)",tags:["Social Media Management VA","Content Creation / Writing VA"]},
+{text:"Systems and processes (organizing workflows)",tags:["Project Management VA","Tech / Automation VA"]},
+{text:"Working with numbers (tracking money/data)",tags:["Bookkeeping / Finance VA"]},
+{text:"Marketing (ads, promotions, growth)",tags:["Digital Marketing VA"]},
+{text:"Helping people (support, answering questions)",tags:["Customer Service VA"]}
+]},
+{title:"How do you prefer to work?",hint:"Choose what fits your style",options:[
+{text:"Creative (designing, brainstorming ideas)",tags:["Social Media Management VA"]},
+{text:"Structured (clear tasks, routines)",tags:["Executive Assistant"]},
+{text:"Analytical (data, numbers, tracking)",tags:["Digital Marketing VA"]},
+{text:"System-based (automation, processes)",tags:["Tech / Automation VA"]}
+]},
+{title:"What type of tasks would you like daily?",options:[
+{text:"Posting and managing social media",tags:["Social Media Management VA"]},
+{text:"Writing and editing content",tags:["Content Creation / Writing VA"]},
+{text:"Managing emails and schedules",tags:["Executive Assistant"]},
+{text:"Helping customers (chat/email support)",tags:["Customer Service VA"]},
+{text:"Tracking numbers (sales, expenses)",tags:["Bookkeeping / Finance VA"]}
+]},
+{title:"What kind of problems do you like solving?",options:[
+{text:"Creative problems (ideas, design)",tags:["Social Media Management VA"]},
+{text:"System problems (automating tasks)",tags:["Tech / Automation VA"]},
+{text:"Business growth (marketing, ads)",tags:["Digital Marketing VA"]},
+{text:"Organization issues (planning tasks)",tags:["Project Management VA"]}
+]},
+{title:"Which sounds more like you?",options:[
+{text:"I like planning and organizing projects",tags:["Project Management VA"]},
+{text:"I like helping people solve issues",tags:["Customer Service VA"]},
+{text:"I like creating content",tags:["Content Creation / Writing VA"]},
+{text:"I like analyzing data and results",tags:["Digital Marketing VA"]}
+]},
+{title:"What environment do you prefer?",options:[
+{text:"Fast-paced (lots of messages/tasks)",tags:["Customer Service VA"]},
+{text:"Calm and structured (organized tasks)",tags:["Executive Assistant"]},
+{text:"Flexible and creative (content work)",tags:["Social Media Management VA"]}
+]},
+{title:"How do you feel about learning tools?",options:[
+{text:"I love learning new tools (AI, automation)",tags:["Tech / Automation VA"]},
+{text:"I’m okay with learning basic tools",tags:["General Administrative VA"]},
+{text:"I prefer simple and familiar tools",tags:["General Administrative VA"]}
+]},
+{title:"What excites you the most?",options:[
+{text:"Creating content (posts, videos)",tags:["Social Media Management VA"]},
+{text:"Automating work (saving time using tools)",tags:["Tech / Automation VA"]},
+{text:"Helping businesses grow (marketing)",tags:["Digital Marketing VA"]},
+{text:"Organizing work (systems, tasks)",tags:["Executive Assistant"]}
+]}
+];
+
+function renderQuestion(){
+const quizDiv=document.getElementById("quiz");
+const q=questions[step];
+const total=questions.length;
+
+document.getElementById("progressText").innerText=`${step+1}/${total}`;
+document.getElementById("progressBar").style.width=((step+1)/total)*100+"%";
+
+quizDiv.innerHTML=`<div class="question"><h3>${step+1}. ${q.title}</h3><div class="hint">${q.hint || ""}</div></div>`;
+
+q.options.forEach(opt=>{
+const checked=answers[step]?.includes(opt.text)?"checked":"";
+quizDiv.innerHTML+=`<label><input type="checkbox" ${checked} onchange="toggleOption(${step}, '${opt.text.replace(/'/g, "&#39;")}')">${opt.text}</label>`;
+});
+}
+
+function toggleOption(qIndex,value){
+if(!answers[qIndex]) answers[qIndex]=[];
+if(answers[qIndex].includes(value)){
+answers[qIndex]=answers[qIndex].filter(v=>v!==value);
+}else{answers[qIndex].push(value);}
+}
+
+function nextStep(){
+if(step<questions.length-1){step++;renderQuestion();}
+else{calculateResult();}
+}
+
+function prevStep(){
+if(step>0){step--;renderQuestion();}
+}
+
+function calculateResult(){
+Object.keys(niches).forEach(k=>niches[k]=0);
+
+questions.forEach((q,i)=>{
+if(!answers[i]) return;
+answers[i].forEach(ans=>{
+const opt=q.options.find(o=>o.text===ans);
+if(opt){opt.tags.forEach(tag=>{if(niches[tag]!==undefined)niches[tag]+=2;});}
+});
+});
+
+const sorted=Object.entries(niches).sort((a,b)=>b[1]-a[1]);
+const top3=sorted.slice(0,3);
+
+let html=`<h2>Your Top 3 Niches</h2>`;
+
+html+=`<div class="card"><b>🥇 Top 1 Niche: ${top3[0][0]}</b><br>${descriptions[top3[0][0]]}</div>`;
+html+=`<div class="card"><b>🥈 Top 2 Niche: ${top3[1][0]}</b><br>${descriptions[top3[1][0]]}</div>`;
+html+=`<div class="card"><b>🥉 Top 3 Niche: ${top3[2][0]}</b><br>${descriptions[top3[2][0]]}</div>`;
+
+html+=`<div class="buttons"><button onclick="location.reload()">Take Quiz Again</button></div>`;
+
+// FULL PROGRESS BAR
+document.getElementById("progressText").innerText=`${questions.length}/${questions.length}`;
+document.getElementById("progressBar").style.width="100%";
+
+document.getElementById("quiz").innerHTML="";
+document.getElementById("navButtons").style.display="none";
+document.getElementById("result").innerHTML=html;
+}
+
+renderQuestion();
+</script>
+
+</body>
+</html>
